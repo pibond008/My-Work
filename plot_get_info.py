@@ -13,8 +13,8 @@ G = 6.673e-11       # m^3/(kg s^2)
 c = 299792458       # m/s
 M_sol = 1.98892e30  # kg
 # convertion factors
-M_to_ms = 1./(1000*M_sol*G/(c*c*c))
-M_to_density = c**5 / (G**3 * M_sol**2) # kg/m^3
+#M_to_ms = 1./(1000*M_sol*G/(c*c*c))
+#M_to_density = c**5 / (G**3 * M_sol**2) # kg/m^3
 
 def get_info(thorn,quantity, folder,t0,coordinate="x"):
         print("Looking for files in the folder: {}".format(folder))
