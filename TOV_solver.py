@@ -9,14 +9,16 @@ def eos(P,K,gamma):
     epsilon = rho_b + P/(gamma - 1) # energy density
     return rho_b, epsilon
 
-def tov_eqs(r,m,P,K,gamma):
-    # "Mass and Pressure Equations of State"
+def tov_eqs(r, m, P, K, gamma):
     if P <= 0:
-        return 0, 0
-    rho_b, epsilon = eos(P,K,gamma)
+        return np.array([0.0, 0.0, 0.0])
+    
+    rho_b, epsilon = eos(P, K, gamma)
+
     dm_dr = 4 * np.pi * r**2 * epsilon
     dP_dr = - (rho_b + epsilon) * (m + 4 * np.pi * r**3 * P) / (r * (r - 2 * m))
     dphi_dr = (m + 4 * np.pi * r**3 * P) / (r * (r - 2 * m))
+
     return np.array([dm_dr, dP_dr, dphi_dr])
 
 def rk4_step(r, y, dr, K, gamma):
