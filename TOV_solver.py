@@ -29,67 +29,54 @@ def rk4_step(r, y, dr, K, gamma):
     k3 = tov_eqs(r + dr/2, m + dr*k2[0]/2, P + dr*k2[1]/2, K, gamma)
     k4 = tov_eqs(r + dr,   m + dr*k3[0],   P + dr*k3[1],   K, gamma)
     
-    # RK4 weighted sum
     dm = (k1[0] + 2*k2[0] + 2*k3[0] + k4[0]) / 6
     dP = (k1[1] + 2*k2[1] + 2*k3[1] + k4[1]) / 6
     dphi = (k1[2] + 2*k2[2] + 2*k3[2] + k4[2]) / 6
-    
-    # update all three components
+
     return np.array([m + dr*dm, P + dr*dP, phi + dr*dphi])
 
-def solve_tov(rho_c, K=100, gamma=2, dr=1e-3):
-    P = K * rho_c**gamma # central pressure
-    r = 1e-6 # starting radius
-    eps_c, _ = eos(P, K, gamma) # central energy density
-    m = (4.0/3.0) * np.pi * r**3 * eps_c   # initial mass
+def solve_tov_full(rho_c, K=100, gamma=2, dr=1e-3, r_max=200):
+    P = K*rho_c**gamma # central pressure
+    r = 1e-6 # start at a small radius to avoid singularity
+    _, eps_c = eos(P, K, gamma) # central energy density
+    m = (4*np.pi/3)*r**3*eps_c # initial mass
     phi = 0.0 # initial metric potential
+    y = np.array([m, P, phi]) # initial state vector
 
-    y = np.array([m, P, phi])
+    r_int = [r]
+    m_int = [m]
+    P_int = [P]
+    phi_int = [phi]
 
-    Radius = [r]
-    Mass = [m]
-    Pressure =[P]
-    Phi = [phi]
-    while y[1] > 0:
+    while y[1] > 0 and r < r_max:
         y = rk4_step(r, y, dr, K, gamma)
         r += dr
-
         m, P, phi = y
-        Radius.append(r)
-        Mass.append(m)
-        Pressure.append(P)
-        Phi.append(phi)
+        r_int.append(r)
+        m_int.append(m)
+        P_int.append(P)
+        phi_int.append(phi)
 
-    R = r
-    M = m    
-    R_iso = R / (1 + M/(2*R))**2
+    R = r_int[-1]
+    M = m_int[-1]
     phi_R = 0.5*np.log(1 - 2*M/R)
-    phi_Shift = phi_R - Phi
-    return M, R, R_iso, np.array(Radius), np.array(Mass), np.array(Pressure), np.array(Phi), np.array(phi_Shift)
+    phi_shift = phi_R - phi_int[-1]
+    phi_int = np.array(phi_int) + phi_shift
+
+    r_ext = np.linspace(R, r_max, 600)
+    phi_ext = 0.5*np.log(1 - 2*M/r_ext)
+    R_iso = R/(1+M/(2*R))**2
+
+    return M, R, R_iso, np.array(r_int), np.array(m_int), np.array(P_int), phi_int, r_ext, phi_ext
 
 rho_c = 1.28e-3
-M, R, R_iso, Radius, Mass, Pressure, Phi, phi_shift = solve_tov(rho_c)
+M, R, R_iso, r_int, m_int, P_int, phi_int, r_ext, phi_ext = solve_tov_full(rho_c)
+
 print(f"Gravitational Mass: {M:.4f}, Radius: {R:.4f}, Isotropic Radius: {R_iso:.4f}")
 
-plt.figure(figsize=(8,6))
-plt.plot(Radius, Mass)
-plt.xlabel("Radius")
-plt.ylabel("Mass")
-plt.title(r"${M(R)}$ from TOV Solver")
-plt.grid()
 
-plt.figure(figsize=(8,6))
-plt.plot(Radius, Pressure)
-plt.xlabel("Radius")
-plt.ylabel("Pressure")
-plt.title(r"${P(R)}$ from TOV Solver")
-plt.grid()
-
-plt.figure(figsize=(8,6))
-plt.plot(Radius, phi_shift)
-plt.xlabel("Radius")
-plt.ylabel(r"$\Phi(R) - \Phi(0)$")
-plt.title(r"${\Phi(R) - \Phi(0)}$ from TOV Solver")
-plt.grid()
-
+plt.plot(r_int, phi_int, label="Interior")
+plt.plot(r_ext, phi_ext, '--', label="Exterior")
+plt.axvline(R, linestyle=':', color='k')
+plt.legend()
 plt.show()
