@@ -16,7 +16,7 @@ def tov_eqs(r, m, P, K, gamma):
     rho_b, epsilon = eos(P, K, gamma)
 
     dm_dr = 4 * np.pi * r**2 * epsilon
-    dP_dr = - (rho_b + epsilon) * (m + 4 * np.pi * r**3 * P) / (r * (r - 2 * m))
+    dP_dr = - (epsilon + P) * (m + 4 * np.pi * r**3 * P) / (r * (r - 2 * m))
     dphi_dr = (m + 4 * np.pi * r**3 * P) / (r * (r - 2 * m))
 
     return np.array([dm_dr, dP_dr, dphi_dr])
@@ -75,8 +75,22 @@ M, R, R_iso, r_int, m_int, P_int, phi_int, r_ext, phi_ext = solve_tov_full(rho_c
 print(f"Gravitational Mass: {M:.4f}, Radius: {R:.4f}, Isotropic Radius: {R_iso:.4f}")
 
 
+plt.plot(r_int, m_int, label="Mass Profile")
+plt.xlabel("Radius r")
+plt.ylabel("Enclosed Mass m(r)")
+plt.legend()
+plt.show()
+
+plt.plot(r_int, P_int, label="Pressure Profile")
+plt.xlabel("Radius r")
+plt.ylabel("Pressure P(r)")
+plt.legend()
+plt.show()
+
 plt.plot(r_int, phi_int, label="Interior")
 plt.plot(r_ext, phi_ext, '--', label="Exterior")
 plt.axvline(R, linestyle=':', color='k')
+plt.xlabel("Radius r")
+plt.ylabel("Metric Potential φ(r)")
 plt.legend()
 plt.show()
