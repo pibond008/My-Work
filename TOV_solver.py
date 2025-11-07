@@ -156,7 +156,7 @@ plt.plot(r_bar_ext, psi_ext_iso, '--', label="Exterior")
 plt.xlabel(r"Isotropic radius $\bar{r}$")
 plt.ylabel(r"Conformal factor $\psi(\bar{r})$")
 plt.legend()
-plt.savefig("iso_psi.png", dpi=300, bbox_inches='tight')
+plt.savefig("/home/harsh/m_thesis/Programs/Harsh_thesis/output_plots/iso_psi.png", dpi=300, bbox_inches='tight')
 plt.show()
 
 # Lapse
@@ -165,7 +165,7 @@ plt.plot(r_bar_ext, alpha_ext, '--', label="Exterior")
 plt.xlabel(r"Isotropic radius $\bar{r}$")
 plt.ylabel(r"Lapse $\alpha(\bar{r})$")
 plt.legend()
-plt.savefig("iso_alpha.png", dpi=300, bbox_inches='tight')
+plt.savefig("/home/harsh/m_thesis/Programs/Harsh_thesis/output_plots/iso_alpha.png", dpi=300, bbox_inches='tight')
 plt.show()
 
 # Mapping stretch r → r̄
@@ -173,7 +173,7 @@ plt.plot(r_int, r_bar_int, label=r"$\bar{r}(r)$")
 plt.xlabel(r"Areal radius $r$")
 plt.ylabel(r"Isotropic radius $\bar{r}$")
 plt.legend()
-plt.savefig("iso_r_stretch.png", dpi=300, bbox_inches='tight')
+plt.savefig("/home/harsh/m_thesis/Programs/Harsh_thesis/output_plots/iso_r_stretch.png", dpi=300, bbox_inches='tight')
 plt.show()
 
 
