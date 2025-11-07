@@ -69,6 +69,21 @@ def solve_tov_full(rho_c, K=100, gamma=2, dr=1e-3, r_max=200):
 
     return M, R, R_iso, np.array(r_int), np.array(m_int), np.array(P_int), phi_int, r_ext, phi_ext
 
+def convert_to_isotropic(r_arr, m_arr):
+    r_bar = np.zeros_like(r_arr)
+    r_bar[0] = r_arr[0]
+
+    for i in range(len(r_arr)-1):
+        r = r_arr[i]
+        m = m_arr[i]
+        dr = r_arr[i+1] - r_arr[i]
+        fac = np.sqrt(1 - 2*m/r)
+        dbar = (r_bar[i] / r) * fac * dr
+        r_bar[i+1] = r_bar[i] + dbar
+
+    psi = np.sqrt(r_arr / r_bar) # Conformal factor
+    return r_bar, psi
+
 K = 100
 gamma = 2
 rho_c = 1.28e-3
@@ -81,23 +96,23 @@ epsilon_arr = rho_b_arr + np.array(P_int)/(gamma - 1) # Energy density
 enthalpy_arr = np.where(rho_b_arr > 0, (epsilon_arr + np.array(P_int))/np.array(rho_b_arr), 0.0) # Enthalpy
 M_0 = 4 * np.pi * np.array(r_int)**2 * rho_b_arr / np.sqrt(1 - (2*np.array(m_int) / np.array(r_int))) # Baryonic Mass
 
-plt.plot(r_int, rho_b_arr, label=r"Baryon density $\rho_b(r)$")
-plt.xlabel(r"Radius $r$")
-plt.ylabel(r"$\rho_b(r)$")
-plt.legend()
-plt.show()
+# plt.plot(r_int, rho_b_arr, label=r"Baryon density $\rho_b(r)$")
+# plt.xlabel(r"Radius $r$")
+# plt.ylabel(r"$\rho_b(r)$")
+# plt.legend()
+# plt.show()
 
-plt.plot(r_int[0:-1], enthalpy_arr[0:-1], label=r"Enthalpy $h(r)$")
-plt.xlabel(r"Radius $r$")
-plt.ylabel(r"Enthalpy ($h$)")
-plt.legend()
-plt.show()
+# plt.plot(r_int[0:-1], enthalpy_arr[0:-1], label=r"Enthalpy $h(r)$")
+# plt.xlabel(r"Radius $r$")
+# plt.ylabel(r"Enthalpy ($h$)")
+# plt.legend()
+# plt.show()
 
-plt.plot(r_int, M_0, label=r"Baryonic Mass $M_0(r)$")
-plt.xlabel(r"Radius $r$")
-plt.ylabel(r"$M_0(r)$")
-plt.legend()
-plt.show()
+# plt.plot(r_int, M_0, label=r"Baryonic Mass $M_0(r)$")
+# plt.xlabel(r"Radius $r$")
+# plt.ylabel(r"$M_0(r)$")
+# plt.legend()
+# plt.show()
 
 # plt.plot(r_int, m_int, label="Mass Profile")
 # plt.xlabel("Radius r")
@@ -118,3 +133,51 @@ plt.show()
 # plt.ylabel("Metric Potential φ(r)")
 # plt.legend()
 # plt.show()
+
+########## Isotropic Coordinate Conversion ##########
+
+### Interior
+
+r_bar_int, psi_int_iso = convert_to_isotropic(r_int, m_int)
+alpha_int = np.exp(phi_int) # Lapse function in isotropic coords (Interior)
+
+
+### Exterior
+
+r_bar_ext = r_ext / (1 + M/(2*r_ext))**2
+psi_ext_iso = np.sqrt(r_ext / r_bar_ext)    # Conformal factor
+alpha_ext = np.exp(phi_ext) # Lapse function in isotropic coords (Exterior)
+
+### Combine Interior and Exterior
+
+# Conformal factor
+plt.plot(r_bar_int, psi_int_iso, label="Interior")
+plt.plot(r_bar_ext, psi_ext_iso, '--', label="Exterior")
+plt.xlabel(r"Isotropic radius $\bar{r}$")
+plt.ylabel(r"Conformal factor $\psi(\bar{r})$")
+plt.legend()
+plt.savefig("iso_psi.png", dpi=300, bbox_inches='tight')
+plt.show()
+
+# Lapse
+plt.plot(r_bar_int, alpha_int, label="Interior")
+plt.plot(r_bar_ext, alpha_ext, '--', label="Exterior")
+plt.xlabel(r"Isotropic radius $\bar{r}$")
+plt.ylabel(r"Lapse $\alpha(\bar{r})$")
+plt.legend()
+plt.savefig("iso_alpha.png", dpi=300, bbox_inches='tight')
+plt.show()
+
+# Mapping stretch r → r̄
+plt.plot(r_int, r_bar_int, label=r"$\bar{r}(r)$")
+plt.xlabel(r"Areal radius $r$")
+plt.ylabel(r"Isotropic radius $\bar{r}$")
+plt.legend()
+plt.savefig("iso_r_stretch.png", dpi=300, bbox_inches='tight')
+plt.show()
+
+
+print("psi_int(R) =", psi_int_iso[-1])
+print("psi_ext(R) =", psi_ext_iso[0])
+print("alpha_int(R) =", alpha_int[-1])
+print("alpha_ext(R) =", alpha_ext[0])
