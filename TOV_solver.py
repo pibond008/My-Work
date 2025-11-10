@@ -93,8 +93,9 @@ M = M*2*1e30
 R = R*1.47664  # Convert to km
 r_int = r_int * 1.47664  # Convert to km
 m_int = m_int * 2*1e30  # Convert to Kg
+R_iso = R_iso * 1.47664  # Convert to km
 
-print(f"Gravitational Mass: {M:.4f} (Kg), Radius: {R:.4f} (Km), Isotropic Radius: {R_iso:.4f}")
+print(f"Gravitational Mass: {M:.4f} (Kg), Radius: {R:.4f} (Km), Isotropic Radius: {R_iso:.4f} (Km)")
 
 
 plt.plot()
@@ -148,6 +149,7 @@ plt.show()
 
 r_bar_int, psi_int_iso = convert_to_isotropic(r_int, m_int)
 alpha_int = np.exp(phi_int) # Lapse function in isotropic coords (Interior)
+print(r"\_bar(R) =", r_bar_int[-1]*1.47664, "Km")
 
 
 ### Exterior
