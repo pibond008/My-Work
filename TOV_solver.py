@@ -89,13 +89,13 @@ gamma = 2
 rho_c = 1.28e-3
 M, R, R_iso, r_int, m_int, P_int, phi_int, r_ext, phi_ext = solve_tov_full(rho_c)
 
-M = M*2*1e30
-R = R*1.47664  # Convert to km
-r_int = r_int * 1.47664  # Convert to km
-m_int = m_int * 2*1e30  # Convert to Kg
-R_iso = R_iso * 1.47664  # Convert to km
+# M = M*2*1e30
+# R = R*1.47664  # Convert to km
+# r_int = r_int * 1.47664  # Convert to km
+# m_int = m_int * 2*1e30  # Convert to Kg
+# R_iso = R_iso * 1.47664  # Convert to km
 
-print(f"Gravitational Mass: {M:.4f} (Kg), Radius: {R:.4f} (Km), Isotropic Radius: {R_iso:.4f} (Km)")
+print(f"Gravitational Mass: {M*2*1e30:.4e} (Kg), Radius: {R*1.47664:.4f} (Km), Isotropic Radius: {R_iso*1.47664:.4f} (Km)")
 
 
 plt.plot()
@@ -122,7 +122,7 @@ M_0 = 4 * np.pi * np.array(r_int)**2 * rho_b_arr / np.sqrt(1 - (2*np.array(m_int
 # plt.legend()
 # plt.show()
 
-plt.plot(r_int, m_int, label="Mass Profile")
+plt.plot(r_int*1.47664, m_int*2*1e30, label="Mass Profile")
 plt.xlabel("Radius r(Km)")
 plt.ylabel("Enclosed Mass m(r) (Kg)")
 plt.legend()
@@ -149,8 +149,6 @@ plt.show()
 
 r_bar_int, psi_int_iso = convert_to_isotropic(r_int, m_int)
 alpha_int = np.exp(phi_int) # Lapse function in isotropic coords (Interior)
-print(r"\_bar(R) =", r_bar_int[-1]*1.47664, "Km")
-
 
 ### Exterior
 
@@ -187,7 +185,17 @@ alpha_ext = np.exp(phi_ext) # Lapse function in isotropic coords (Exterior)
 # plt.show()
 
 
+M = M*2*1e30
+R = R*1.47664  # Convert to km
+r_int = r_int * 1.47664  # Convert to km
+m_int = m_int * 2*1e30  # Convert to Kg
+R_iso = R_iso * 1.47664  # Convert to km
+
+
 print("psi_int(R) =", psi_int_iso[-1])
 print("psi_ext(R) =", psi_ext_iso[0])
 print("alpha_int(R) =", alpha_int[-1])
 print("alpha_ext(R) =", alpha_ext[0])
+print(r"\_bar(R) =", r_bar_int[-1]*1.47664, "Km")
+print(r"r_{int} = ", r_int[-1], "Km")
+print(r"m_{int} = ", f"{m_int[-1]*2*1e30:.4e}", "Kg")
