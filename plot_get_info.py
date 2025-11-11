@@ -135,8 +135,8 @@ def get_1d_slice(tk1, xk1, datax, itd, coordinate):
 
     return xj_sorted, f_xi_tj_sorted
 
-ixd = 7  # index of the x point for time series
-itd = 20  # index of the time point for 1D slice
+ixd = 4  # index of the x point for time series
+itd = 0  # index of the time point for 1D slice
 #res = "h" # resolution: low, mid, high
 
 # if res == "l":
@@ -164,34 +164,35 @@ t_h,x_p_h,rl_h,rl_n_h,datax_h = get_info("hydrobase","rho","/home/harsh/simulati
 #         comments=""
 #     )
 
-time_values_l,f_xt_values_l = fx_timeseries(t_l,x_p_l,datax_l,ixd,coordinate="x")
-xj_sorted_l, f_xi_tj_sorted_l = get_1d_slice(t_l, x_p_l, datax_l, itd, coordinate="x")
+# time_values_l,f_xt_values_l = fx_timeseries(t_l,x_p_l,datax_l,ixd,coordinate="x")
+# xj_sorted_l, f_xi_tj_sorted_l = get_1d_slice(t_l, x_p_l, datax_l, itd, coordinate="x")
 
-time_values_m,f_xt_values_m = fx_timeseries(t_m,x_p_m,datax_m,ixd,coordinate="x")
-xj_sorted_m, f_xi_tj_sorted_m = get_1d_slice(t_m, x_p_m, datax_m, itd, coordinate="x")
+# time_values_m,f_xt_values_m = fx_timeseries(t_m,x_p_m,datax_m,ixd,coordinate="x")
+# xj_sorted_m, f_xi_tj_sorted_m = get_1d_slice(t_m, x_p_m, datax_m, itd, coordinate="x")
 
 time_values_h,f_xt_values_h = fx_timeseries(t_h,x_p_h,datax_h,ixd,coordinate="x")
-xj_sorted_h, f_xi_tj_sorted_h = get_1d_slice(t_h, x_p_h, datax_h, itd, coordinate="x")
+xj_sorted_h, f_xi_tj_sorted_h = get_1d_slice(t_h, x_p_h, datax_h, itd = 0, coordinate="x")
+print(f"time length = {len(xj_sorted_h)}")
 
 # Plotting time series for different resolutions
 
 plt.figure(figsize=(8,5))  # optional, makes figure larger
 
-plt.plot(time_values_l, f_xt_values_l, color='r', label=f"Low (x={ixd*2})")
-plt.plot(time_values_m, f_xt_values_m, color='b', label=f"Mid (x={ixd})")
-plt.plot(time_values_h, f_xt_values_h, color='k', label=f"High (x={ixd*0.5})")
+# plt.plot(time_values_l, f_xt_values_l, color='r', label=f"Low (x={ixd*2})")
+# plt.plot(time_values_m, f_xt_values_m, color='b', label=f"Mid (x={ixd})")
+plt.plot(xj_sorted_h[0:51], f_xi_tj_sorted_h[0:51], color='k', label=f"High (x={ixd*0.5})")
 
 plt.xlabel("Time")
 plt.ylabel("Rho")
-plt.title("Time Series Comparison")
+plt.title("rho vs time at x index")
 plt.legend()
 plt.grid(True)  # optional, makes reading easier
-plt.savefig("/home/harsh/m_thesis/Programs/output_plots/timeseries_comparison.png", dpi=300)
+plt.savefig("/home/harsh/m_thesis/Programs/output_plots/rho_x.png", dpi=300)
 plt.show()
 
 #plt.close()  # closes the figure
 
-#sys.exit()
+sys.exit()
 # plt.plot(xj_sorted, f_xi_tj_sorted, label=f"1D slice at ixd={ixd}, itd={itd}")
 # plt.xlabel("x")
 # plt.ylabel("f(x)")
