@@ -315,4 +315,5 @@ plt.plot(xj_sorted_h, f_xi_tj_sorted_h, color='k', label=r"Baryon density $\rho_
 plt.xlabel(r"Radius $r$")
 plt.ylabel(r"$\rho_b(r)$")
 plt.legend()
+plt.savefig("/home/harsh/m_thesis/Programs/Harsh_thesis/output_plots/ETK_solver_rho_comparison.png", dpi=300, bbox_inches='tight')
 plt.show()
