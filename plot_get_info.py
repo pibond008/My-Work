@@ -171,8 +171,8 @@ t_h,x_p_h,rl_h,rl_n_h,datax_h = get_info("hydrobase","rho","/home/harsh/simulati
 # xj_sorted_m, f_xi_tj_sorted_m = get_1d_slice(t_m, x_p_m, datax_m, itd, coordinate="x")
 
 time_values_h,f_xt_values_h = fx_timeseries(t_h,x_p_h,datax_h,ixd,coordinate="x")
-xj_sorted_h, f_xi_tj_sorted_h = get_1d_slice(t_h, x_p_h, datax_h, itd = 0, coordinate="x")
-print(f"time length = {len(xj_sorted_h)}")
+xj_sorted_h, f_xi_tj_sorted_h = get_1d_slice(t_h, x_p_h, datax_h, itd, coordinate="x")
+#print(f"time length = {len(xj_sorted_h)}")
 
 # Plotting time series for different resolutions
 
@@ -180,7 +180,7 @@ plt.figure(figsize=(8,5))  # optional, makes figure larger
 
 # plt.plot(time_values_l, f_xt_values_l, color='r', label=f"Low (x={ixd*2})")
 # plt.plot(time_values_m, f_xt_values_m, color='b', label=f"Mid (x={ixd})")
-plt.plot(xj_sorted_h[0:51], f_xi_tj_sorted_h[0:51], color='k', label=f"High (x={ixd*0.5})")
+plt.plot(xj_sorted_h[0:61], f_xi_tj_sorted_h[0:61], color='k', label=f"High (x={ixd*0.5})")
 
 plt.xlabel("Time")
 plt.ylabel("Rho")
