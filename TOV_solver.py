@@ -310,7 +310,7 @@ print(f"data legth = {len(xj_sorted_h)}")
 
 plt.figure(figsize=(8,5))
 
-plt.plot(r_int, rho_b_arr, label=r"Baryon density $\rho_b(r)$ from the solver")
+plt.plot(r_bar_int, rho_b_arr, label=r"Baryon density $\rho_b(r)$ from the solver")
 plt.plot(xj_sorted_h, f_xi_tj_sorted_h, color='k', label=r"Baryon density $\rho_b(r)$ from ETK data")
 plt.xlabel(r"Radius $r$")
 plt.ylabel(r"$\rho_b(r)$")
