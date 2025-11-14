@@ -123,7 +123,7 @@ def rk4_step(r, y, dr, K, gamma):
 
     return np.array([m + dr*dm, P + dr*dP, phi + dr*dphi])
 
-def solve_tov_full(rho_c, K=100, gamma=2, dr=1e-3, r_max=200):
+def solve_tov_full(rho_c, K=100, gamma=2, dr=0.09, r_max=200):
     P = K*rho_c**gamma # central pressure
     r = 1e-6 # start at a small radius to avoid singularity
     _, eps_c = eos(P, K, gamma) # central energy density
@@ -175,6 +175,70 @@ def convert_to_isotropic(r_arr, m_arr):
 K = 100
 gamma = 2
 rho_c = 1.28e-3
+rho_c_arr = [7.57e-04, 8.41e-04, 9.35e-04, 1.04e-03, 1.15e-03, 1.28e-03, 1.41e-03, 1.55e-03, 1.71e-03, 1.88e-03, 2.07e-03]
+
+#print("Central Densities:", rho_c_arr)
+
+#### data from the ETK nad solver for comparison
+
+radius_etk = [9.37129, 9.1306, 8.89103, 8.63677, 8.39131, 8.12502, 7.88102, 7.64084, 7.39133, 7.15112, 6.909]
+grav_mass_etk = [1.10702, 1.16956, 1.23134, 1.29145, 1.34574, 1.40016, 1.44568, 1.48637, 1.5241, 1.55576, 1.58284]
+baryonic_mass_etk = [1.16772, 1.23846, 1.30905, 1.37848, 1.44188, 1.50618, 1.56058, 1.60976, 1.65588, 1.69504, 1.72892]
+
+M_solver = []
+R_solver = []
+M_baryonic_solver = []
+
+for ik in range(len(rho_c_arr)):
+    rho_c = rho_c_arr[ik]
+    M, R, R_iso, r_int, m_int, P_int, phi_int, r_ext, phi_ext = solve_tov_full(rho_c)
+
+    M_solver.append(M)
+    R_solver.append(R)
+
+    r = np.array(r_int)
+    m = np.array(m_int)
+    P = np.array(P_int)
+    rho_b = np.where(P > 0, (P / K)**(1/gamma), 0.0)
+
+    mask = (1 - 2*m/r) > 0
+    r = r[mask]
+    m = m[mask]
+    rho_b = rho_b[mask]
+
+    integrand = 4 * np.pi * r**2 * rho_b / np.sqrt(1 - 2*m/r)
+    # Total baryonic mass = integral of integrand over radius
+    M_baryonic = np.trapz(integrand, r)
+    M_baryonic_solver.append(M_baryonic)
+    #print(f"rho_c: {rho_c:.4e}, Gravitational Mass: {M*2*1e30:.4e} (Kg), Radius: {R*1.47664:.4f} (Km), Isotropic Radius: {R_iso*1.47664:.4f} (Km)")
+
+radius_etk = np.array(radius_etk)
+R_solver = np.array(R_solver)
+radius_etk *= 1.47664  # Convert to km
+R_solver *= 1.47664  # Convert to km
+
+plt.figure(figsize=(8,5))
+
+plt.subplot(1,2,1)
+plt.plot(R_solver, M_solver, label="Solver")
+plt.scatter(radius_etk, grav_mass_etk, color='k', label="ETK data")
+plt.xlabel("Radius R (km)")
+plt.ylabel("Gravitational Mass")
+plt.legend()
+
+plt.subplot(1,2,2)
+plt.plot(R_solver, M_baryonic_solver, label="Solver")
+plt.scatter(radius_etk, baryonic_mass_etk, color='k', label="ETK data")
+plt.xlabel("Radius R (km)")
+plt.ylabel("Baryonic Mass")
+plt.legend()    
+
+plt.show()
+
+sys.exit()
+
+
+
 M, R, R_iso, r_int, m_int, P_int, phi_int, r_ext, phi_ext = solve_tov_full(rho_c)
 
 # M = M*2*1e30
@@ -188,7 +252,27 @@ print(f"Gravitational Mass: {M*2*1e30:.4e} (Kg), Radius: {R*1.47664:.4f} (Km), I
 rho_b_arr = (np.array(P_int)/K)**(1/gamma) # Baryon density
 epsilon_arr = rho_b_arr + np.array(P_int)/(gamma - 1) # Energy density
 enthalpy_arr = np.where(rho_b_arr > 0, (epsilon_arr + np.array(P_int))/np.array(rho_b_arr), 0.0) # Enthalpy
-M_0 = 4 * np.pi * np.array(r_int)**2 * rho_b_arr / np.sqrt(1 - (2*np.array(m_int) / np.array(r_int))) # Baryonic Mass
+#M_0 = 4 * np.pi * np.array(r_int)**2 * rho_b_arr / np.sqrt(1 - (2*np.array(m_int) / np.array(r_int))) # Baryonic Mass
+
+# r, m, P as numpy arrays from your solver
+r = np.array(r_int)
+m = np.array(m_int)
+P = np.array(P_int)
+
+# Baryon density (avoid negative pressures)
+rho_b = np.where(P > 0, (P / K)**(1/gamma), 0.0)
+
+# Avoid unphysical region where 1 - 2*m/r <= 0
+mask = (1 - 2*m/r) > 0
+r = r[mask]
+m = m[mask]
+rho_b = rho_b[mask]
+
+# Integrand
+integrand = 4 * np.pi * r**2 * rho_b / np.sqrt(1 - 2*m/r)
+
+# Total baryonic mass = integral of integrand over radius
+M_baryonic = np.trapz(integrand, r)
 
 # plt.plot(r_int, rho_b_arr, label=r"Baryon density $\rho_b(r)$")
 # plt.xlabel(r"Radius $r$")
@@ -235,6 +319,7 @@ M_0 = 4 * np.pi * np.array(r_int)**2 * rho_b_arr / np.sqrt(1 - (2*np.array(m_int
 
 r_bar_int, psi_int_iso = convert_to_isotropic(r_int, m_int)
 alpha_int = np.exp(phi_int) # Lapse function in isotropic coords (Interior)
+print(len(r_bar_int), len(psi_int_iso), len(alpha_int))
 
 ### Exterior
 
@@ -283,7 +368,7 @@ print("psi_ext(R) =", psi_ext_iso[0])
 print("alpha_int(R) =", alpha_int[-1])
 print("alpha_ext(R) =", alpha_ext[0])
 print(r"\_bar(R) =", r_bar_int[-1]*1.47664, "Km")
-print(r"r_{int} = ", r_int[-1], "Km")
+print(r"r_{int} = ", r_int[-1]*1.47664, "Km")
 print(r"m_{int} = ", m_int[-1])
 
 
