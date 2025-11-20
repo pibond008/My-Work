@@ -181,9 +181,9 @@ rho_c_arr = [7.57e-04, 8.41e-04, 9.35e-04, 1.04e-03, 1.15e-03, 1.28e-03, 1.41e-0
 
 #### data from the ETK nad solver for comparison
 
-radius_etk = [9.37129, 9.1306, 8.89103, 8.63677, 8.39131, 8.12502, 7.88102, 7.64084, 7.39133, 7.15112, 6.909]
-grav_mass_etk = [1.10702, 1.16956, 1.23134, 1.29145, 1.34574, 1.40016, 1.44568, 1.48637, 1.5241, 1.55576, 1.58284]
-baryonic_mass_etk = [1.16772, 1.23846, 1.30905, 1.37848, 1.44188, 1.50618, 1.56058, 1.60976, 1.65588, 1.69504, 1.72892]
+radius_etk = [1.0511e+01, 1.0343e+01, 1.0165e+01, 9.9769e+00, 9.7912e+00, 9.5855e+00, 9.3933e+00, 9.1998e+00, 8.9941e+00, 8.7917e+00, 8.5829e+00]
+grav_mass_etk = [1.1070, 1.1696e+00, 1.2313e+00, 1.2915e+00, 1.3457e+00, 1.4002e+00, 1.4457e+00, 1.4864e+00, 1.5241e+00, 1.5558e+00, 1.5828e+00]
+baryonic_mass_etk = [1.1677, 1.2385e+00, 1.3091e+00, 1.3785e+00, 1.4419e+00, 1.5062e+00, 1.5606e+00, 1.6098e+00, 1.6559e+00, 1.6950e+00, 1.7289e+00]
 
 M_solver = []
 R_solver = []
@@ -219,28 +219,48 @@ R_solver *= 1.47664  # Convert to km
 
 plt.figure(figsize=(8,5))
 
-plt.subplot(1,2,1)
+plt.subplot(1,3,1)
 plt.plot(R_solver, M_solver, label="Solver")
 plt.scatter(radius_etk, grav_mass_etk, color='k', label="ETK data")
 plt.xlabel("Radius R (km)")
 plt.ylabel("Gravitational Mass")
 plt.legend()
 
-plt.subplot(1,2,2)
+plt.subplot(1,3,2)
 plt.plot(R_solver, M_baryonic_solver, label="Solver")
 plt.scatter(radius_etk, baryonic_mass_etk, color='k', label="ETK data")
 plt.xlabel("Radius R (km)")
 plt.ylabel("Baryonic Mass")
 plt.legend()    
+
+plt.subplot(1,3,3)
+plt.plot(R_solver, rho_c_arr, label="Solver")
+plt.scatter(radius_etk, rho_c_arr, color='k', label="ETK data")
+plt.xlabel("Radius R (km)")
+plt.ylabel("Density")
+plt.legend()
+
 plt.show()
 
 #plt.savefig("RvsM")
 
+
+t_rns,x_p_rns,rl_rns,rl_n_rns,datax_rns = get_info("hydrobase","rho","/home/harsh/simulations/hydro_rns/output-0006/tov_ET",0.0,"x")
+xj_sorted_rns, f_xi_tj_sorted_rns = get_1d_slice(t_rns, x_p_rns, datax_rns, itd = 0, coordinate="x")
+
+M, R, R_iso, r_int, m_int, P_int, phi_int, r_ext, phi_ext = solve_tov_full(rho_c_arr[5])
+r_bar_int, psi_int_iso = convert_to_isotropic(r_int, m_int)
+rho_b_arr = (np.array(P_int)/K)**(1/gamma) # Baryon density
+
+plt.plot(xj_sorted_rns, f_xi_tj_sorted_rns, label=r"Baryon density $\rho_b(r)$ from ETK data")
+plt.plot(r_bar_int, rho_b_arr, '--', label=r"Baryon density $\rho_b(r)$ from the solver")
+plt.xlabel(r"Radius $r$ (Km)")
+plt.ylabel(r"$\rho_b(r)$")
+plt.legend()
+plt.show()
+
 sys.exit()
 
-
-
-M, R, R_iso, r_int, m_int, P_int, phi_int, r_ext, phi_ext = solve_tov_full(rho_c)
 
 # M = M*2*1e30
 # R = R*1.47664  # Convert to km

@@ -182,7 +182,7 @@ plt.figure(figsize=(8,5))  # optional, makes figure larger
 
 # plt.plot(time_values_l, f_xt_values_l, color='r', label=f"Low (x={ixd*2})")
 # plt.plot(time_values_m, f_xt_values_m, color='b', label=f"Mid (x={ixd})")
-plt.plot(xj_sorted_rns[0:61], f_xi_tj_sorted_rns[0:61], color='k', label=f"High (x={ixd*0.5})")
+plt.plot(time_values_rns, f_xt_values_rns, color='k', label=f"High (x={ixd*0.5})")
 
 plt.xlabel("Time")
 plt.ylabel("Rho")
@@ -191,10 +191,9 @@ plt.legend()
 plt.grid(True)  # optional, makes reading easier
 plt.savefig("/home/harsh/m_thesis/Programs/output_plots/rho_x.png", dpi=300)
 plt.show()
-
+sys.exit()
 #plt.close()  # closes the figure
 
-sys.exit()
 # plt.plot(xj_sorted, f_xi_tj_sorted, label=f"1D slice at ixd={ixd}, itd={itd}")
 # plt.xlabel("x")
 # plt.ylabel("f(x)")
@@ -203,14 +202,14 @@ sys.exit()
 # plt.close()  # closes the figure
 
 ############### 1D SLICE PLOTTING SCRIPT #####################
-xj_sorted, rho_0 = get_1d_slice(t_h, x_p_h, datax_h, itd=0, coordinate="x")
+xj_sorted, rho_0 = get_1d_slice(t_rns, x_p_rns, datax_rns, itd=0, coordinate="x")
 rho_0 = rho_0
 rho_threshold = 1e-9
 
 # time = []
 surface = []
-for itd in range(len(t_h)):
-    xj_sorted, f_xi_tj_sorted = get_1d_slice(t_h, x_p_h, datax_h, itd, coordinate="x")
+for itd in range(len(t_rns)):
+    xj_sorted, f_xi_tj_sorted = get_1d_slice(t_rns, x_p_rns, datax_rns, itd, coordinate="x")
     for i in range(len(f_xi_tj_sorted)):
         if f_xi_tj_sorted[i] < rho_threshold:
             surf = xj_sorted[i]
@@ -260,36 +259,61 @@ thorns = ["hydrobase"]
 quantities = ["rho"]
 
 
-for idx, (thorn, quantity,grid) in enumerate(zip(thorns, quantities,grids)):
-    #ax = axs[idx, 1]  # Right column
+for idx, (thorn, quantity, grid) in enumerate(zip(thorns, quantities, grids)):
     ax_current = ax
-    field = getattr(testsim.gf.xz.fields, quantity)
+    field = getattr(testsim.gf.xz.fields, quantity)  # XZ plane
+
     it_nbr = field.available_iterations
     time_steps = field.available_times
-    #print(f"[{quantity}] Available iterations: {it_nbr}")
-    its   = it_nbr[last_or_first]
+
+    its = it_nbr[last_or_first]
     dtime = time_steps[last_or_first]
+
     rho0_center = field.read_on_grid(its, grid)
     newgrid = np.array(rho0_center.coordinates_meshgrid()) * 1.477
+    rho_cgs_xyz = np.log10(rho0_center.data_xyz)
 
-    # Use log scale for rho, linear for phi
     if quantity == "rho":
-        rho_cgs_xyz = np.log10(rho0_center.data_xyz) #* cgs_to_ETK_density/1e15
-        
-        cf = ax.contourf(*newgrid, rho_cgs_xyz, levels=100,cmap="inferno")
-        
-        # Draw surface
+        # Mirror both X and Z axes for full 4-quadrant plot
+        xg, zg = newgrid
+        rho = rho_cgs_xyz
+
+        # Mirror X axis
+        xg_full = np.concatenate((-np.flip(xg, axis=1), xg), axis=1)
+        rho_full = np.concatenate((np.flip(rho, axis=1), rho), axis=1)
+        zg_full = np.concatenate((-np.flip(zg, axis=1), zg), axis=1)  # Mirror Z axis
+
+        # Mirror Z axis by stacking
+        xg_full = np.concatenate((xg_full, xg_full), axis=0)
+        zg_full = np.concatenate((-zg_full, zg_full), axis=0)
+        rho_full = np.concatenate((rho_full, rho_full), axis=0)
+
+        # Contour plot
+        cf = ax.contourf(xg_full, zg_full, rho_full, levels=100, cmap="inferno")
+
+        # Draw full circle for stellar surface
         arc1 = Arc((0, 0), width=2*x_value*1.477, height=2*x_value*1.477,
-          theta1=0, theta2=90, color='white', linestyle='--', linewidth=2)
+                   theta1=0, theta2=360, color='white', linestyle='--', linewidth=2)
         ax.add_patch(arc1)
-        text = ax.text(rho_lim*0.8*1.477 , rho_lim*0.9*1.477, f"t = {dtime/M_to_ms:.2f} ms", fontsize=12, color='white')
- 
-        cbar = plt.colorbar(cf, ax=ax)   
+
+        # Ensure full circle is visible
+        R = x_value * 1.477
+        ax.set_xlim(-R, R)
+        ax.set_ylim(-R, R)
+        ax.set_aspect('equal', adjustable='box')
+
+        # Time annotation
+        text = ax.text(rho_lim*0.8*1.477, rho_lim*0.9*1.477,
+                       f"t = {dtime/M_to_ms:.2f} ms", fontsize=12, color='white')
+
+        # Colorbar
+        cbar = plt.colorbar(cf, ax=ax)
         cbar.set_label('log10[rho]', fontsize=14)
 
-    #ax.set_title(f"{ylabels_2d[quantity]}", fontsize=18)
+    # Axis labels
     ax.set_xlabel("X [km]")
     ax.set_ylabel("Z [km]")
+
 
 
 
