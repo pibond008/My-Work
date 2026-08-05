@@ -21,10 +21,9 @@ The code also explores **varying initial separations (`delta`)** and close encou
 ## Repository Structure
 ```
 my-work/
-├── Numerical-Methods-Exercises/   # Optional exercises
-├── orbital_simulations.py          # Main simulation code
-├── README.md                       # This file
-└── plots/                          # Folder to save figures
+├── Chaos-N_body_simulations/   # Optional exercises
+├── chaos.py          # Main simulation code                       
+└── readme.md                          # This file
 ```
 
 ## Usage
